@@ -1,5 +1,9 @@
 # MCP Server Demo
 
+[![version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/BooboNikita/mcp-server-demo)
+[![python](https://img.shields.io/badge/python-3.13.3-blue.svg)](https://www.python.org/)
+[![uv](https://img.shields.io/badge/uv-0.9.17-blue.svg)](https://github.com/astral-sh/uv)
+
 这是一个基于 [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) 的示例项目，展示了如何构建一个 MCP 服务器以及如何编写一个能够自动调用工具的智能客户端。
 
 ## 项目特点
