@@ -1,8 +1,9 @@
 # MCP Server Demo
 
-[![version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/BooboNikita/mcp-server-demo)
-[![python](https://img.shields.io/badge/python-3.13.3-blue.svg)](https://www.python.org/)
-[![uv](https://img.shields.io/badge/uv-0.9.17-blue.svg)](https://github.com/astral-sh/uv)
+[![Version][version-badge]][repo-url]
+[![Python Version][python-badge]][python-url]
+[![UV Version][uv-badge]][uv-url]
+[![License][license-badge]][license-url]
 
 这是一个基于 [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) 的示例项目，展示了如何构建一个 MCP 服务器以及如何编写一个能够自动调用工具的智能客户端。
 
@@ -31,7 +32,7 @@ pip install mcp[cli] langchain-openai langchain python-dotenv
 
 ### 2. 配置环境变量
 
-在项目根目录创建 `.env` 文件，并配置你的 API 密钥
+在项目根目录创建 `.env` 文件，并配置你的 API 密钥。**注意：请勿将 `.env` 文件提交到版本控制系统。**
 
 ```env
 KIMI_API_KEY=你的_KIMI_API_KEY
@@ -77,3 +78,13 @@ python client.py mcptools.py
 ## 许可证
 
 MIT
+
+<!-- 引用式链接定义 -->
+[version-badge]: https://img.shields.io/badge/version-0.1.0-blue.svg
+[python-badge]: https://img.shields.io/badge/python-3.13.3-blue.svg
+[uv-badge]: https://img.shields.io/badge/uv-0.9.17-blue.svg
+[license-badge]: https://img.shields.io/badge/license-MIT-green.svg
+[repo-url]: https://github.com/BooboNikita/mcp-server-demo
+[python-url]: https://www.python.org/
+[uv-url]: https://github.com/astral-sh/uv
+[license-url]: https://opensource.org/licenses/MIT
