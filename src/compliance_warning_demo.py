@@ -11,5 +11,5 @@ from compliance_warning.server import ensure_seeded, mcp
 
 if __name__ == "__main__":
     ensure_seeded()
-    mcp.run(transport="stdio")
+    mcp.run(transport="streamable-http")
 

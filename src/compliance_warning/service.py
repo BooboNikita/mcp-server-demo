@@ -73,18 +73,43 @@ def schema_hint(source_system: SourceSystem) -> dict[str, Any]:
     }
 
 
-def parse_payload_json(payload_json: str) -> dict[str, Any]:
-    if not payload_json.strip():
-        return {}
-    obj = json.loads(payload_json)
-    if isinstance(obj, dict):
-        return obj
-    return {"value": obj}
+def parse_payload_json(payload_input: Any) -> dict[str, Any]:
+    """解析输入数据，支持字符串 JSON 或直接传入的字典。"""
+    if isinstance(payload_input, dict):
+        return payload_input
+    
+    if isinstance(payload_input, str):
+        content = payload_input.strip()
+        if not content:
+            return {}
+        
+        # 尝试自动修复常见的 LLM 转义错误（例如 \" -> "）
+        # 这种错误通常发生在模型尝试在 JSON 字符串内部手动转义键名时
+        if '\\"' in content and '"' in content:
+            # 只有当检测到非法转义序列时才尝试修复
+            fixed_content = content.replace('\\"', '"')
+            try:
+                obj = json.loads(fixed_content)
+                if isinstance(obj, dict):
+                    return obj
+            except json.JSONDecodeError:
+                pass
+
+        try:
+            obj = json.loads(content)
+            if isinstance(obj, dict):
+                return obj
+            return {"value": obj}
+        except json.JSONDecodeError:
+            # 如果不是合法的 JSON 字符串，则作为文本字段返回
+            return {"text": content}
+            
+    return {}
 
 
-def assess_compliance_risk(source_system: SourceSystem, payload_json: str) -> dict[str, Any]:
-    payload = parse_payload_json(payload_json)
-    query = build_query(source_system, payload)
+def assess_compliance_risk(source_system: SourceSystem, payload: Any) -> dict[str, Any]:
+    payload_data = parse_payload_json(payload)
+    query = build_query(source_system, payload_data)
 
     policy_docs = kb.iter_policy_texts()
     case_docs = kb.iter_case_texts()
@@ -92,7 +117,7 @@ def assess_compliance_risk(source_system: SourceSystem, payload_json: str) -> di
     policy_hits = topk_by_similarity(query, policy_docs, k=3) if policy_docs else []
     case_hits = topk_by_similarity(query, case_docs, k=3) if case_docs else []
 
-    signals = evaluate_rules(source_system, payload)
+    signals = evaluate_rules(source_system, payload_data)
     score = score_probability(
         signals=signals,
         policy_hits=policy_hits,
@@ -130,7 +155,7 @@ def assess_compliance_risk(source_system: SourceSystem, payload_json: str) -> di
         "signals": signals,
         "citations": citations,
         "follow_up_questions": follow_ups[:5],
-        "normalized_payload": payload,
+        "normalized_payload": payload_data,
     }
 
 

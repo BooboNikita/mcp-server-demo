@@ -1,11 +1,16 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any, Literal, Union
 
+import os
+from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
 from . import kb, service
 from .models import SourceSystem
+
+# 加载环境变量
+load_dotenv()
 
 mcp = FastMCP("ComplianceWarningDemo", json_response=True, port=8001)
 
@@ -58,7 +63,7 @@ def ingest_case(
     summary: str,
     decision: Literal["compliant", "non_compliant", "unknown"],
     reasons: str,
-    tags_json: str = "[]",
+    tags_json: Union[str, list[str]] = "[]",
 ) -> dict[str, Any]:
     """向知识库动态录入一个历史合规案例（审计结果或否决记录）。"""
     return kb.ingest_case(
@@ -71,10 +76,15 @@ def ingest_case(
 
 
 @mcp.tool()
-def assess_compliance_risk(source_system: SourceSystem, payload_json: str) -> dict[str, Any]:
-    """核心评估工具：根据提供的业务数据，结合制度库和案例库，计算不合规概率并给出预警理由与证据引用。"""
+def assess_compliance_risk(source_system: SourceSystem, payload: Union[dict[str, Any], str]) -> dict[str, Any]:
+    """核心评估工具：根据提供的业务数据，结合制度库和案例库，计算不合规概率并给出预警理由与证据引用。
+    
+    Args:
+        source_system: 业务系统类型 (decision, procurement, analytics)
+        payload: 业务数据对象（推荐）或 JSON 字符串。
+    """
     ensure_seeded()
-    return service.assess_compliance_risk(source_system, payload_json)
+    return service.assess_compliance_risk(source_system, payload)
 
 
 @mcp.tool()
