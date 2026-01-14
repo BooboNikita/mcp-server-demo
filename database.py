@@ -90,7 +90,7 @@ async def app_lifespan(server: FastMCP) -> AsyncIterator[AppContext]:
 
 
 # Pass lifespan to server
-mcp = FastMCP("My App", lifespan=app_lifespan)
+mcp = FastMCP("My App", lifespan=app_lifespan, port=8000)
 
 
 # Access type-safe lifespan context in tools
