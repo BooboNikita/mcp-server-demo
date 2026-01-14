@@ -76,9 +76,11 @@ def ingest_case(
 
 
 @mcp.tool()
-def assess_compliance_risk(source_system: SourceSystem, payload: Union[dict[str, Any], str]) -> dict[str, Any]:
+def assess_compliance_risk(
+    source_system: SourceSystem, payload: Union[dict[str, Any], str]
+) -> dict[str, Any]:
     """核心评估工具：根据提供的业务数据，结合制度库和案例库，计算不合规概率并给出预警理由与证据引用。
-    
+
     Args:
         source_system: 业务系统类型 (decision, procurement, analytics)
         payload: 业务数据对象（推荐）或 JSON 字符串。
@@ -107,3 +109,6 @@ def get_case(case_id: str) -> str:
     ensure_seeded()
     return kb.get_case_json(case_id)
 
+
+if __name__ == "__main__":
+    mcp.run()

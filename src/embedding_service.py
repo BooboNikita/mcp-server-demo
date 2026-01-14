@@ -15,15 +15,18 @@ print(f"Loading Embedding Model ({MODEL_NAME})...")
 model = HuggingFaceEmbeddings(
     model_name=MODEL_NAME,
     model_kwargs={"trust_remote_code": True},
-    encode_kwargs={"normalize_embeddings": True}
+    encode_kwargs={"normalize_embeddings": True},
 )
 print("Model loaded successfully.")
+
 
 class EmbeddingRequest(BaseModel):
     input: Union[str, List[str]]
 
+
 class EmbeddingResponse(BaseModel):
     embeddings: List[List[float]]
+
 
 @app.post("/embed", response_model=EmbeddingResponse)
 async def embed_text(request: EmbeddingRequest):
@@ -39,10 +42,12 @@ async def embed_text(request: EmbeddingRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "model": MODEL_NAME}
 
+
 if __name__ == "__main__":
     # 默认运行在 8002 端口，避免与 MCP Server (8001) 冲突
-    uvicorn.run(app, host="0.0.0.0", port=8002)
+    uvicorn.run(app, host="0.0.0.0", port=8003)
