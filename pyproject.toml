@@ -19,4 +19,5 @@ dependencies = [
     "autogenstudio>=0.4.2.2",
     "autogen-agentchat>=0.5.7",
     "autogen-ext[openai]>=0.5.7",
+    "youdotcom>=1.4.1",
 ]
