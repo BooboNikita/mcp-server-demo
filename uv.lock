@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.13.3"
 resolution-markers = [
     "sys_platform == 'win32'",
@@ -1844,6 +1844,7 @@ dependencies = [
     { name = "langchain-huggingface" },
     { name = "langchain-mcp-adapters" },
     { name = "langchain-openai" },
+    { name = "markitdown" },
     { name = "mcp", extra = ["cli"] },
     { name = "python-a2a" },
     { name = "python-dotenv" },
@@ -1865,6 +1866,7 @@ requires-dist = [
     { name = "langchain-huggingface", specifier = ">=0.1.0" },
     { name = "langchain-mcp-adapters", specifier = ">=0.2.1" },
     { name = "langchain-openai", specifier = ">=1.1.6" },
+    { name = "markitdown" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.25.0" },
     { name = "python-a2a", specifier = ">=0.5.10" },
     { name = "python-dotenv", specifier = ">=1.2.1" },

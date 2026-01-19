@@ -22,4 +22,5 @@ dependencies = [
     "youdotcom>=1.4.1",
     "python-a2a>=0.5.10",
     "python-dotenv>=1.2.1",
+    "markitdown",
 ]
