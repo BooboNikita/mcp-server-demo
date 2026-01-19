@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/mnt/d/code/mcp-server-demo/src/a2a/sales_consultant.py", line 7, in <module>
+    from langchain_openai import ChatOpenAI
+  File "/mnt/d/code/mcp-server-demo/.venv/lib/python3.13/site-packages/langchain_openai/__init__.py", line 3, in <module>
+    from langchain_openai.chat_models import AzureChatOpenAI, ChatOpenAI

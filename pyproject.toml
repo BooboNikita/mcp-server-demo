@@ -20,4 +20,6 @@ dependencies = [
     "autogen-agentchat>=0.5.7",
     "autogen-ext[openai]>=0.5.7",
     "youdotcom>=1.4.1",
+    "python-a2a>=0.5.10",
+    "python-dotenv>=1.2.1",
 ]
