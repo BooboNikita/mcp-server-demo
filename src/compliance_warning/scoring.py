@@ -38,7 +38,7 @@ def score_probability(
         sev = str(s.get("severity", "low"))
         w = weight_by_sev.get(sev, 0.1)
         p_from_signals = 1.0 - (1.0 - p_from_signals) * (1.0 - w)
-    print(signals)
+    # print(signals)
 
     p_from_cases = 0.0
     for hit in case_hits[:3]:
@@ -47,13 +47,13 @@ def score_probability(
         decision = case_decision_getter(case_id) if case_id else None
         base = 0.25 if decision == "non_compliant" else 0.08
         p_from_cases = max(p_from_cases, base * sim)
-    print(case_hits)
+    # print(case_hits)
 
     p_from_policies = 0.0
     for hit in policy_hits[:3]:
         sim = float(hit.get("score", 0.0))
         p_from_policies = max(p_from_policies, 0.12 * sim)
-    print(policy_hits)
+    # print(policy_hits)
 
     raw = 0.15 + 0.55 * p_from_signals + 0.25 * p_from_cases + 0.15 * p_from_policies
     p = clamp01(raw)

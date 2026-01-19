@@ -57,7 +57,7 @@ def topk_by_similarity(
     # 获取查询和文档的向量
     # 注意：在实际生产中，文档向量应该被缓存或预先计算
     query_vec = embeddings_model.embed_query(query)
-    print(f"Query vector: {query_vec}...")
+    # print(f"Query vector: {query_vec}...")
 
     doc_texts = [doc[1] for doc in docs]
     doc_vecs = embeddings_model.embed_documents(doc_texts)

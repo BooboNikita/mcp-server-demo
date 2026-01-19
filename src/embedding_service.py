@@ -9,7 +9,7 @@ app = FastAPI(title="Embedding Service")
 # 初始化模型（全局加载一次）
 # 使用 Qwen3 系列的 Embedding 模型 (0.6B 级别)
 # Qwen/Qwen3-Embedding-0.6B 是最新的 Qwen3 系列 Embedding 模型，兼顾性能与效率
-MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B"
+MODEL_NAME = "BAAI/bge-small-zh-v1.5"
 
 print(f"Loading Embedding Model ({MODEL_NAME})...")
 model = HuggingFaceEmbeddings(

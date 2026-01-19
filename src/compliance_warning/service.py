@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import Any
+
+from dotenv import load_dotenv
+from langchain_core.messages import SystemMessage
+from langchain_openai import ChatOpenAI
 
 from . import kb
 from .models import SourceSystem
@@ -107,6 +112,106 @@ def parse_payload_json(payload_input: Any) -> dict[str, Any]:
     return {}
 
 
+_LLM: ChatOpenAI | None = None
+
+
+def get_llm() -> ChatOpenAI | None:
+    global _LLM
+    if _LLM is not None:
+        return _LLM
+    load_dotenv()
+    api_key = os.getenv("KIMI_API_KEY")
+    api_url = os.getenv("KIMI_API_URL")
+    model = os.getenv("KIMI_MODEL") or "kimi-latest"
+    if not api_key or not api_url:
+        return None
+    _LLM = ChatOpenAI(
+        model_name=model,
+        openai_api_key=api_key,
+        openai_api_base=api_url,
+        temperature=0,
+    )
+    return _LLM
+
+
+def extract_json_object(text: str) -> dict[str, Any] | None:
+    if not text:
+        return None
+    content = text.strip()
+    if content.startswith("{") and content.endswith("}"):
+        try:
+            value = json.loads(content)
+            if isinstance(value, dict):
+                return value
+        except json.JSONDecodeError:
+            pass
+    start = content.find("{")
+    end = content.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return None
+    candidate = content[start : end + 1]
+    try:
+        value = json.loads(candidate)
+        if isinstance(value, dict):
+            return value
+    except json.JSONDecodeError:
+        return None
+    return None
+
+
+def normalize_llm_risk(obj: Any) -> dict[str, Any] | None:
+    if not isinstance(obj, dict):
+        return None
+    prob = obj.get("probability")
+    level = obj.get("level")
+    if not isinstance(prob, (int, float)):
+        return None
+    if level not in {"low", "medium", "high", "block"}:
+        return None
+    normalized = dict(obj)
+    prob_value = max(0.0, min(1.0, float(prob)))
+    normalized["probability"] = round(prob_value, 4)
+    return normalized
+
+
+def llm_assess_risk(
+    *,
+    source_system: SourceSystem,
+    payload_data: dict[str, Any],
+    signals: list[dict[str, Any]],
+    policy_hits: list[dict[str, Any]],
+    case_hits: list[dict[str, Any]],
+    rule_score: dict[str, Any],
+) -> dict[str, Any] | None:
+    llm = get_llm()
+    if llm is None:
+        return None
+    prompt = (
+        "你是合规风控专家，需要基于业务数据、规则信号、制度命中与案例命中给出风险评分。"
+        "如果规则信号中存在 severity=block，风险等级必须为 block，且概率应不低于0.85。"
+        "仅输出 JSON，不要附加任何解释文本。\n"
+        "输出格式:\n"
+        "{"
+        '"probability": 0.0-1.0,'
+        '"level": "low|medium|high|block",'
+        '"reasoning": "一句话解释",'
+        '"key_risks": ["风险点1", "风险点2"],'
+        '"required_actions": ["补充材料或整改动作"]'
+        "}\n"
+        "输入数据:\n"
+        f"source_system: {source_system}\n"
+        f"payload: {json.dumps(payload_data, ensure_ascii=False)}\n"
+        f"signals: {json.dumps(signals, ensure_ascii=False)}\n"
+        f"policy_hits: {json.dumps(policy_hits, ensure_ascii=False)}\n"
+        f"case_hits: {json.dumps(case_hits, ensure_ascii=False)}\n"
+        f"rule_score: {json.dumps(rule_score, ensure_ascii=False)}\n"
+    )
+    response = llm.invoke([SystemMessage(content=prompt)])
+    content = getattr(response, "content", None) or str(response)
+    print(f'content {content}')
+    return normalize_llm_risk(extract_json_object(content))
+
+
 def assess_compliance_risk(source_system: SourceSystem, payload: Any) -> dict[str, Any]:
     payload_data = parse_payload_json(payload)
     query = build_query(source_system, payload_data)
@@ -124,6 +229,18 @@ def assess_compliance_risk(source_system: SourceSystem, payload: Any) -> dict[st
         case_hits=case_hits,
         case_decision_getter=kb.get_case_decision,
     )
+    llm_risk = llm_assess_risk(
+        source_system=source_system,
+        payload_data=payload_data,
+        signals=signals,
+        policy_hits=policy_hits,
+        case_hits=case_hits,
+        rule_score=score,
+    )
+
+    print(f"llm_risk {llm_risk} {score}")
+
+    risk = llm_risk or score
 
     follow_ups: list[str] = []
     for s in signals:
@@ -151,7 +268,9 @@ def assess_compliance_risk(source_system: SourceSystem, payload: Any) -> dict[st
 
     return {
         "source_system": source_system,
-        "risk": score,
+        "risk": risk,
+        "risk_rule_based": score,
+        "llm_assessment": llm_risk,
         "signals": signals,
         "citations": citations,
         "follow_up_questions": follow_ups[:5],
@@ -162,4 +281,3 @@ def assess_compliance_risk(source_system: SourceSystem, payload: Any) -> dict[st
 def assess_demo(source_system: SourceSystem) -> dict[str, Any]:
     payload = demo_payload(source_system)
     return assess_compliance_risk(source_system, json.dumps(payload, ensure_ascii=False))
-
