@@ -79,14 +79,43 @@ def ingest_case(
 def assess_compliance_risk(
     source_system: SourceSystem, payload: Union[dict[str, Any], str]
 ) -> dict[str, Any]:
-    """核心评估工具：根据提供的业务数据，结合制度库和案例库，计算不合规概率并给出预警理由与证据引用。
+    """【第一步】执行合规风险初步筛查。
+    
+    这是评估流程的入口。它会：
+    1. 解析业务数据
+    2. 运行规则引擎检测硬性风险（Signals）
+    3. 检索相似的历史案例和制度条款（Hits）
+    
+    注意：此工具返回的是原始证据（Evidence），不包含最终评分。
+    获得输出后，你通常需要继续调用 `calculate_risk_score` 来计算量化风险。
 
     Args:
-        source_system: 业务系统类型 (decision, procurement, analytics)
-        payload: 业务数据对象（推荐）或 JSON 字符串。
+        source_system: 业务系统类型，可选值: decision (决策), procurement (采购), analytics (合同)
+        payload: 业务数据的 JSON 字符串或对象。例如: {"project_name": "...", "amount": 10000}
     """
     ensure_seeded()
-    return service.assess_compliance_risk(source_system, payload)
+    return service.assess_compliance_context(source_system, payload)
+
+
+@mcp.tool()
+def calculate_risk_score(
+    signals: list[dict[str, Any]],
+    policy_hits: list[dict[str, Any]],
+    case_hits: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """【第二步】计算量化风险评分。
+    
+    必须使用 `assess_compliance_risk` 的输出作为此工具的输入。
+    它会根据信号严重度和案例相似度，应用数学模型计算客观的风险概率（Probability）和等级（Level）。
+
+    Args:
+        signals: 从 assess_compliance_risk 返回的 signals 列表
+        policy_hits: 从 assess_compliance_risk 返回的 policy_hits 列表
+        case_hits: 从 assess_compliance_risk 返回的 case_hits 列表
+    """
+
+
+
 
 
 @mcp.tool()
